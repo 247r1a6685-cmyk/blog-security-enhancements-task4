@@ -1,25 +1,51 @@
 <?php
 session_start();
-include 'db.php';
+include "config.php";
 
-if(isset($_POST['login'])) {
+$message = "";
 
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $sql = "SELECT * FROM users WHERE username='$username'";
-    $result = mysqli_query($conn, $sql);
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
 
-    $user = mysqli_fetch_assoc($result);
+    if (empty($username) || empty($password)) {
+        $message = "All fields required";
+    }
+    else {
 
-    if($user && password_verify($password, $user['password'])) {
+        // PREPARED STATEMENT
 
-        $_SESSION['username'] = $username;
+        $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
 
-        header("Location: dashboard.php");
+        $stmt->bind_param("s", $username);
 
-    } else {
-        echo "Invalid username or password";
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+
+        if ($result->num_rows == 1) {
+
+            $user = $result->fetch_assoc();
+
+            if (password_verify($password, $user['password'])) {
+
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['role'] = $user['role'];
+
+                header("Location: view_posts.php");
+                exit();
+
+            } else {
+                $message = "Invalid password";
+            }
+
+        } else {
+            $message = "User not found";
+        }
+
+        $stmt->close();
     }
 }
 ?>
@@ -33,15 +59,19 @@ if(isset($_POST['login'])) {
 
 <h2>Login</h2>
 
+<p><?php echo $message; ?></p>
+
 <form method="POST">
 
     Username:
-    <input type="text" name="username" required><br><br>
+    <input type="text" name="username" required>
+    <br><br>
 
     Password:
-    <input type="password" name="password" required><br><br>
+    <input type="password" name="password" required>
+    <br><br>
 
-    <button type="submit" name="login">Login</button>
+    <button type="submit">Login</button>
 
 </form>
 

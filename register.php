@@ -1,17 +1,41 @@
 <?php
-include 'db.php';
+include "config.php";
 
-if(isset($_POST['register'])) {
+$message = "";
 
-    $username = $_POST['username'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $sql = "INSERT INTO users(username, password)
-            VALUES('$username', '$password')";
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
 
-    mysqli_query($conn, $sql);
+    // SERVER SIDE VALIDATION
 
-    echo "Registration Successful!";
+    if (empty($username) || empty($password)) {
+        $message = "All fields are required";
+    }
+    elseif (strlen($password) < 6) {
+        $message = "Password must be at least 6 characters";
+    }
+    else {
+
+        // HASH PASSWORD
+
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // PREPARED STATEMENT
+
+        $stmt = $conn->prepare("INSERT INTO users(username, password) VALUES (?, ?)");
+
+        $stmt->bind_param("ss", $username, $hashed_password);
+
+        if ($stmt->execute()) {
+            $message = "Registration successful";
+        } else {
+            $message = "Error occurred";
+        }
+
+        $stmt->close();
+    }
 }
 ?>
 
@@ -22,7 +46,9 @@ if(isset($_POST['register'])) {
 </head>
 <body>
 
-<h2>User Registration</h2>
+<h2>Register</h2>
+
+<p><?php echo $message; ?></p>
 
 <form method="POST">
 
@@ -31,10 +57,10 @@ if(isset($_POST['register'])) {
     <br><br>
 
     Password:
-    <input type="password" name="password" required>
+    <input type="password" name="password" required minlength="6">
     <br><br>
 
-    <button type="submit" name="register">Register</button>
+    <button type="submit">Register</button>
 
 </form>
 

@@ -1,35 +1,62 @@
 <?php
-include 'db.php';
+session_start();
+include "config.php";
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
 $id = $_GET['id'];
 
-$sql = "SELECT * FROM posts WHERE id=$id";
-$result = mysqli_query($conn, $sql);
-$row = mysqli_fetch_assoc($result);
+$stmt = $conn->prepare("SELECT * FROM posts WHERE id=?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
 
-if(isset($_POST['update'])) {
+$result = $stmt->get_result();
+$post = $result->fetch_assoc();
 
-    $title = $_POST['title'];
-    $content = $_POST['content'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $update = "UPDATE posts 
-               SET title='$title', content='$content'
-               WHERE id=$id";
+    $title = trim($_POST['title']);
+    $content = trim($_POST['content']);
 
-    mysqli_query($conn, $update);
+    $update = $conn->prepare("UPDATE posts SET title=?, content=? WHERE id=?");
+
+    $update->bind_param("ssi", $title, $content, $id);
+
+    $update->execute();
 
     header("Location: view_posts.php");
+    exit();
 }
 ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit</title>
+</head>
+<body>
 
 <h2>Edit Post</h2>
 
 <form method="POST">
-    Title:<br>
-    <input type="text" name="title" value="<?php echo $row['title']; ?>"><br><br>
 
-    Content:<br>
-    <textarea name="content"><?php echo $row['content']; ?></textarea><br><br>
+    Title:
+    <input type="text" name="title"
+    value="<?php echo $post['title']; ?>" required>
 
-    <button type="submit" name="update">Update</button>
+    <br><br>
+
+    Content:
+    <textarea name="content" required><?php echo $post['content']; ?></textarea>
+
+    <br><br>
+
+    <button type="submit">Update</button>
+
 </form>
+
+</body>
+</html>

@@ -1,56 +1,40 @@
 <?php
-include 'db.php';
+session_start();
+include "config.php";
 
-if(!isset($_SESSION['username'])) {
+if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
+    exit();
 }
 
-$sql = "SELECT * FROM posts ORDER BY id DESC";
-
-$result = mysqli_query($conn, $sql);
+$result = $conn->query("SELECT * FROM posts ORDER BY id DESC");
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
+<h2>Welcome <?php echo $_SESSION['username']; ?></h2>
 
-<title>View Posts</title>
+<p>Role: <?php echo $_SESSION['role']; ?></p>
 
-<link rel="stylesheet" href="style.css">
+<a href="create_post.php">Create Post</a>
+<a href="logout.php">Logout</a>
 
-</head>
+<hr>
 
-<body>
-
-<div class="container">
-
-<h2>All Posts</h2>
-
-<?php while($row = mysqli_fetch_assoc($result)) { ?>
-
-<div class="post">
+<?php while($row = $result->fetch_assoc()) { ?>
 
 <h3><?php echo $row['title']; ?></h3>
 
 <p><?php echo $row['content']; ?></p>
 
-<small><?php echo $row['created_at']; ?></small>
-
-<br><br>
-
 <a href="edit_post.php?id=<?php echo $row['id']; ?>">Edit</a>
 
-<a href="delete_post.php?id=<?php echo $row['id']; ?>">Delete</a>
+<?php if($_SESSION['role'] == 'admin') { ?>
 
-</div>
+<a href="delete_post.php?id=<?php echo $row['id']; ?>">
+Delete
+</a>
 
 <?php } ?>
 
-<br>
+<hr>
 
-<a href="dashboard.php">Back to Dashboard</a>
-
-</div>
-
-</body>
-</html>
+<?php } ?>

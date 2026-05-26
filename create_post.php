@@ -1,31 +1,67 @@
 <?php
-include 'db.php';
+session_start();
+include "config.php";
 
-if(isset($_POST['submit'])) {
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-    $title = $_POST['title'];
-    $content = $_POST['content'];
+$message = "";
 
-    $sql = "INSERT INTO posts(title, content)
-            VALUES('$title', '$content')";
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    mysqli_query($conn, $sql);
+    $title = trim($_POST['title']);
+    $content = trim($_POST['content']);
 
-    echo "Post added successfully!";
+    // VALIDATION
+
+    if (empty($title) || empty($content)) {
+        $message = "All fields required";
+    }
+    else {
+
+        // PREPARED STATEMENT
+
+        $stmt = $conn->prepare("INSERT INTO posts(title, content) VALUES (?, ?)");
+
+        $stmt->bind_param("ss", $title, $content);
+
+        if ($stmt->execute()) {
+            $message = "Post created successfully";
+        } else {
+            $message = "Error";
+        }
+
+        $stmt->close();
+    }
 }
 ?>
 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Post</title>
+</head>
+<body>
+
 <h2>Create Post</h2>
 
+<p><?php echo $message; ?></p>
+
 <form method="POST">
-    Title:<br>
-    <input type="text" name="title" required><br><br>
 
-    Content:<br>
-    <textarea name="content" required></textarea><br><br>
+    Title:
+    <input type="text" name="title" required>
+    <br><br>
 
-    <button type="submit" name="submit">Add Post</button>
+    Content:
+    <textarea name="content" required></textarea>
+    <br><br>
+
+    <button type="submit">Create</button>
+
 </form>
 
-<br>
-<a href="dashboard.php">Back to Dashboard</a>
+</body>
+</html>
