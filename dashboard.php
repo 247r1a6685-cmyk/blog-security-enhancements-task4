@@ -15,6 +15,7 @@ if(!isset($_SESSION['username'])) {
 </head>
 
 <body>
+    <?php include 'navbar.php'; ?>
 
 <div class="container">
 

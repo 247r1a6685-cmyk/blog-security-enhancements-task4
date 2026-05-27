@@ -1,0 +1,29 @@
+body{
+    font-family: Arial;
+    margin: 20px;
+    background: #f4f4f4;
+}
+
+.container{
+    width: 70%;
+    margin: auto;
+    background: white;
+    padding: 20px;
+}
+
+input, textarea{
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+button{
+    padding: 10px 20px;
+    background: blue;
+    color: white;
+    border: none;
+}
+
+a{
+    text-decoration: none;
+}

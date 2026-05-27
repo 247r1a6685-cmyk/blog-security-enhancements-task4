@@ -1,51 +1,51 @@
 <?php
 session_start();
-include "config.php";
+
+include 'config.php';
 
 $message = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
+if(isset($_POST['login']))
+{
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    if (empty($username) || empty($password)) {
-        $message = "All fields required";
+    if(empty($username) || empty($password))
+    {
+        $message = "All fields are required!";
     }
-    else {
+    else
+    {
+        $sql = "SELECT * FROM users WHERE username=?";
 
-        // PREPARED STATEMENT
+        $stmt = mysqli_prepare($conn, $sql);
 
-        $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
+        mysqli_stmt_bind_param($stmt, "s", $username);
 
-        $stmt->bind_param("s", $username);
+        mysqli_stmt_execute($stmt);
 
-        $stmt->execute();
+        $result = mysqli_stmt_get_result($stmt);
 
-        $result = $stmt->get_result();
+        if(mysqli_num_rows($result) > 0)
+        {
+            $row = mysqli_fetch_assoc($result);
 
-        if ($result->num_rows == 1) {
+            if(password_verify($password, $row['password']))
+            {
+                $_SESSION['username'] = $username;
 
-            $user = $result->fetch_assoc();
-
-            if (password_verify($password, $user['password'])) {
-
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
-
-                header("Location: view_posts.php");
+                header("Location: dashboard.php");
                 exit();
-
-            } else {
-                $message = "Invalid password";
             }
-
-        } else {
-            $message = "User not found";
+            else
+            {
+                $message = "Invalid password!";
+            }
         }
-
-        $stmt->close();
+        else
+        {
+            $message = "User not found!";
+        }
     }
 }
 ?>
@@ -54,26 +54,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Login</title>
+
+    <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
-<h2>Login</h2>
+<div class="container">
 
-<p><?php echo $message; ?></p>
+    <h2>Login</h2>
 
-<form method="POST">
+    <p><?php echo $message; ?></p>
 
-    Username:
-    <input type="text" name="username" required>
-    <br><br>
+    <form method="POST">
 
-    Password:
-    <input type="password" name="password" required>
-    <br><br>
+        <input type="text" name="username" placeholder="Enter Username">
 
-    <button type="submit">Login</button>
+        <input type="password" name="password" placeholder="Enter Password">
 
-</form>
+        <button type="submit" name="login">Login</button>
+
+    </form>
+
+    <p>
+        Don't have an account?
+        <a href="register.php">Register</a>
+    </p>
+
+</div>
 
 </body>
 </html>

@@ -1,40 +1,39 @@
 <?php
-include "config.php";
+include 'config.php';
 
 $message = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
+if(isset($_POST['register']))
+{
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    // SERVER SIDE VALIDATION
-
-    if (empty($username) || empty($password)) {
-        $message = "All fields are required";
+    if(empty($username) || empty($password))
+    {
+        $message = "All fields are required!";
     }
-    elseif (strlen($password) < 6) {
-        $message = "Password must be at least 6 characters";
+    elseif(strlen($password) < 6)
+    {
+        $message = "Password must be at least 6 characters!";
     }
-    else {
-
-        // HASH PASSWORD
-
+    else
+    {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // PREPARED STATEMENT
+        $sql = "INSERT INTO users(username, password) VALUES(?, ?)";
 
-        $stmt = $conn->prepare("INSERT INTO users(username, password) VALUES (?, ?)");
+        $stmt = mysqli_prepare($conn, $sql);
 
-        $stmt->bind_param("ss", $username, $hashed_password);
+        mysqli_stmt_bind_param($stmt, "ss", $username, $hashed_password);
 
-        if ($stmt->execute()) {
-            $message = "Registration successful";
-        } else {
-            $message = "Error occurred";
+        if(mysqli_stmt_execute($stmt))
+        {
+            $message = "Registration successful!";
         }
-
-        $stmt->close();
+        else
+        {
+            $message = "Registration failed!";
+        }
     }
 }
 ?>
@@ -43,26 +42,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Register</title>
+
+    <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
-<h2>Register</h2>
+<div class="container">
 
-<p><?php echo $message; ?></p>
+    <h2>Register</h2>
 
-<form method="POST">
+    <p><?php echo $message; ?></p>
 
-    Username:
-    <input type="text" name="username" required>
-    <br><br>
+    <form method="POST">
 
-    Password:
-    <input type="password" name="password" required minlength="6">
-    <br><br>
+        <input type="text" name="username" placeholder="Enter Username">
 
-    <button type="submit">Register</button>
+        <input type="password" name="password" placeholder="Enter Password">
 
-</form>
+        <button type="submit" name="register">Register</button>
+
+    </form>
+
+    <p>
+        Already have an account?
+        <a href="login.php">Login</a>
+    </p>
+
+</div>
 
 </body>
 </html>

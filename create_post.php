@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Create Post</title>
 </head>
 <body>
-
+<?php include 'navbar.php'; ?>
 <h2>Create Post</h2>
 
 <p><?php echo $message; ?></p>

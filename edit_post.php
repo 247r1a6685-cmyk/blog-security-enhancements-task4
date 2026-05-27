@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Edit</title>
 </head>
 <body>
-
+<?php include 'navbar.php'; ?>
 <h2>Edit Post</h2>
 
 <form method="POST">

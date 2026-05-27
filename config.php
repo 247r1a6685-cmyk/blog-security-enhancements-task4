@@ -1,14 +1,7 @@
 <?php
+$conn = mysqli_connect("localhost", "root", "", "blog");
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$database = "blog";
-
-$conn = new mysqli($host, $user, $password, $database);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
 }
-
 ?>
